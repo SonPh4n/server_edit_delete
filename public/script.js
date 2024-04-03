@@ -1,13 +1,39 @@
 const getJSON = async () => {
     try {
         let response = await fetch("http://localhost:3001/api/crafts");
-        // let response = await fetch("https://server-get-post-5mjx.onrender.com/api/crafts"); // Alternative URL
+        // let response = await fetch("https://server-get-post-5mjx.onrender.com/api/crafts"); // Alternative URL needed for new render
         return await response.json();
     } catch (error) {
         console.log("error retrieving json");
         return "";
     }
 };
+
+
+const populateEditForm = (craft) => {
+    const form = document.getElementById("add-edit-form");
+    form._id.value = craft._id;
+    form.name.value = craft.name;
+    form.description.value = craft.description;
+
+    populateSupplies(craft.supplies); 
+
+    const imgPreview = document.getElementById("img-prev");
+    imgPreview.src = "images/" + craft.image;
+};
+
+
+const populateSupplies = (supplies) => {
+    const section = document.getElementById("moresupplies");
+    supplies.forEach((supply) => {
+        const input = document.createElement("input");
+        input.type = "text";
+        input.value = supply;
+        section.append(input);
+        section.append(document.createElement("br")); 
+    });
+};
+
 
 const addEditForm = async (e) => {
     e.preventDefault();
@@ -17,11 +43,23 @@ const addEditForm = async (e) => {
     formData.append("supplies", getSupplies());
     console.log(...formData);
 
+    if(form._id.value.trim() == "") {
+        console.log("in post");
+        response = await fetch("/api/crafts", {
+            method: "POST",
+            body: formData,
+        });
+    } else {
+        response = await fetch(`/api/crafts/${form._id.value}`, {
+            method: "PUT",
+            body: formData,
+        });
+    }
 
-    const response = await fetch("/api/crafts", {
-        method:"POST",
-        body: formData,
-    });
+    // const response = await fetch("/api/crafts", {
+    //     method:"POST",
+    //     body: formData,
+    // });
 
     //error
     if(response.status != 200){
@@ -93,7 +131,7 @@ const showCrafts = async () => {
 function openModalWithCraft(craft) {
     var modal = document.getElementById("myModal");
     modal.style.display = "block";
-
+     
     var modalContent = modal.querySelector(".modal-content");
     modalContent.innerHTML = '<span class="close">&times;</span>'; //simplified stack clear
     
@@ -136,9 +174,26 @@ function openModalWithCraft(craft) {
     flexContainer.append(textContentDiv);
     modalContent.append(flexContainer);
 
+     var editButton = document.createElement("button");
+     editButton.textContent = "Edit";
+     editButton.onclick = function() {
+         console.log("Edit button clicked");
+         populateEditForm(craft); 
+         document.getElementById("myModal").style.display = "none"; 
+         document.getElementById("add-edit-modal").style.display = "block"; 
+     };
+     modalContent.append(editButton); 
+ 
+     var deleteButton = document.createElement("button");
+     deleteButton.textContent = "Delete";
+    //  deleteButton.onclick = function() {
+    //      console.log("Delete button clicked");
+    //  };
+     modalContent.append(deleteButton); 
     modal.querySelector('.close').onclick = function() {
         modal.style.display = "none";
     };
+
 }
 
 //necessary changes due to overlap with other modal causing issues displaying anything at all
@@ -181,7 +236,6 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 
-// Initial call to display crafts when the page loads
 window.onload = () => {
     showCrafts();
     document.getElementById("add-edit-form").onsubmit = addEditForm;
@@ -191,7 +245,6 @@ window.onload = () => {
 document.getElementById("image").onchange = (e) => {
     const prev = document.getElementById("img-prev");
 
-    //they didn't pick an image
     if(!e.target.files.length){
         prev.src = "";
         return;
