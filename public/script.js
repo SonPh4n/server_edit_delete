@@ -1,7 +1,7 @@
 const getJSON = async () => {
     try {
         let response = await fetch("http://localhost:3001/api/crafts");
-        // let response = await fetch("https://server-get-post-5mjx.onrender.com/api/crafts"); // Alternative URL needed for new render
+        // let response = await fetch("https://server-edit-delete-g3jv.onrender.com/api/crafts"); // Alternative URL needed for new render
         return await response.json();
     } catch (error) {
         console.log("error retrieving json");
@@ -34,6 +34,29 @@ const populateSupplies = (supplies) => {
     });
 };
 
+const deleteCraft = async(craft)=> {
+    let response = await fetch(`/api/crafts/${craft._id}`, {
+      method:"DELETE",
+      headers:{
+        "Content-Type":"application/json;charset=utf-8"
+      }
+    });
+  
+    if(response.status === 200){
+        console.log("Craft deleted successfully.");
+        resetForm(); 
+        const craftDiv = document.getElementById("craft-list");
+        craftDiv.innerHTML = '';
+        showCrafts(); 
+    } else {
+        console.log("Error deleting craft.");
+    }
+  
+    let result = await response.json();
+    resetForm();
+    showCrafts();
+  };
+
 
 const addEditForm = async (e) => {
     e.preventDefault();
@@ -55,11 +78,6 @@ const addEditForm = async (e) => {
             body: formData,
         });
     }
-
-    // const response = await fetch("/api/crafts", {
-    //     method:"POST",
-    //     body: formData,
-    // });
 
     //error
     if(response.status != 200){
@@ -186,9 +204,11 @@ function openModalWithCraft(craft) {
  
      var deleteButton = document.createElement("button");
      deleteButton.textContent = "Delete";
-    //  deleteButton.onclick = function() {
-    //      console.log("Delete button clicked");
-    //  };
+     deleteButton.onclick = function() {
+        console.log("delete button clicked");
+        deleteCraft(craft);
+        document.getElementById("myModal").style.display = "none"; 
+     };
      modalContent.append(deleteButton); 
     modal.querySelector('.close').onclick = function() {
         modal.style.display = "none";
@@ -226,7 +246,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     
     
-    window.onclik = function(event) {
+    window.onclick = function(event) {
         if (event.target == document.getElementById("myModal")) {
             document.getElementById("myModal").style.display = "none";
         } else if (event.target == document.getElementById("add-edit-modal")) {
