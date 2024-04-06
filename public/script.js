@@ -1,7 +1,7 @@
 const getJSON = async () => {
     try {
-        // let response = await fetch("http://localhost:3001/api/crafts");
-        let response = await fetch("https://server-edit-delete-g3jv.onrender.com/api/crafts"); // Alternative URL needed for new render
+        let response = await fetch("http://localhost:3001/api/crafts");
+        // let response = await fetch("https://server-edit-delete-g3jv.onrender.com/api/crafts"); // Alternative URL needed for new render
         return await response.json();
     } catch (error) {
         console.log("error retrieving json");
@@ -34,28 +34,23 @@ const populateSupplies = (supplies) => {
     });
 };
 
-const deleteCraft = async(craft)=> {
+const deleteCraft = async (craft) => {
     let response = await fetch(`/api/crafts/${craft._id}`, {
-      method:"DELETE",
-      headers:{
-        "Content-Type":"application/json;charset=utf-8"
-      }
+        method: "DELETE",
+        headers: {
+            "Content-Type": "application/json;charset=utf-8"
+        }
     });
-  
-    if(response.status === 200){
+
+    if (response.status === 200) {
         console.log("Craft deleted successfully.");
-        resetForm(); 
-        const craftDiv = document.getElementById("craft-list");
-        craftDiv.innerHTML = '';
+        document.getElementById("craft-list").innerHTML = '';
         showCrafts(); 
     } else {
         console.log("Error deleting craft.");
     }
-  
-    let result = await response.json();
-    resetForm();
-    showCrafts();
-  };
+};
+
 
 
 const addEditForm = async (e) => {
